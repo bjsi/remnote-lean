@@ -10,8 +10,16 @@
   },
   "dependencies": {
     "@remnote/plugin-sdk": "^0.0.18",
+    "buffer": "^6.0.3",
+    "lean-client-js-browser": "^2.0.1",
+    "monaco-editor": "^0.36.0",
+    "monaco-editor-webpack-plugin": "^7.0.1",
+    "path-browserify": "^1.0.1",
+    "process": "^0.11.10",
     "react": "^17.0.2",
-    "react-dom": "^17.0.2"
+    "react-dom": "^17.0.2",
+    "stream-browserify": "^3.0.0",
+    "worker-loader": "^3.0.8"
   },
   "devDependencies": {
     "@pmmmwh/react-refresh-webpack-plugin": "^0.5.7",

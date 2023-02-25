@@ -1,8 +1,30 @@
 import { declareIndexPlugin, ReactRNPlugin, WidgetLocation } from '@remnote/plugin-sdk';
 import '../style.css';
 import '../App.css';
+import { registerLeanLanguage } from '../lib/langservice';
+import { LeanJsOpts } from 'lean-client-js-browser';
+
+import { Buffer } from 'buffer';
+
+// @ts-ignore
+window.Buffer = Buffer;
+
+const hostPrefix = './dist/';
+
+const leanJsOpts: LeanJsOpts = {
+  javascript: hostPrefix + 'lean_js_js.js',
+  libraryZip: hostPrefix + 'library.zip',
+  libraryMeta: hostPrefix + 'library.info.json',
+  libraryOleanMap: hostPrefix + 'library.olean_map.json',
+  libraryKey: 'library',
+  webassemblyJs: hostPrefix + 'lean_js_wasm.js',
+  webassemblyWasm: hostPrefix + 'lean_js_wasm.wasm',
+  dbName: 'leanlibrary',
+};
 
 async function onActivate(plugin: ReactRNPlugin) {
+  registerLeanLanguage(leanJsOpts);
+
   // Register settings
   await plugin.settings.registerStringSetting({
     id: 'name',

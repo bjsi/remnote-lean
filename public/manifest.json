@@ -1,18 +1,17 @@
 {
+  "author": "james",
+  "name": "Lean Theorem Prover",
+  "description": "Adds support for interactive theorem proving using Lean",
+  "enableOnMobile": false,
+  "id": "remnote_lean",
   "manifestVersion": 1,
-  "id": "plugin_template",
-  "name": "Plugin Template",
-  "author": "remnote",
-  "repoUrl": "",
+  "repoUrl": "https://github.com/bjsi/remnote-lean",
   "version": {
     "major": 0,
     "minor": 0,
     "patch": 1
   },
-  "theme": [],
-  "enableOnMobile": false,
-  "description": "",
-  "requestNative": false,
+  "requestNative": true,
   "requiredScopes": [
     {
       "type": "All",

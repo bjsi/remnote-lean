@@ -1,4 +1,5 @@
 const { resolve } = require('path');
+const webpack = require('webpack');
 var glob = require('glob');
 var path = require('path');
 
@@ -7,6 +8,7 @@ const { ESBuildMinifyPlugin } = require('esbuild-loader');
 const { ProvidePlugin, BannerPlugin } = require('webpack');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
+const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
 
 const CopyPlugin = require('copy-webpack-plugin');
 
@@ -32,6 +34,11 @@ const config = {
   },
   resolve: {
     extensions: ['.js', '.jsx', '.ts', '.tsx'],
+    fallback: {
+      path: require.resolve('path-browserify'),
+      stream: require.resolve('stream-browserify'),
+      buffer: require.resolve('buffer'),
+    },
   },
   module: {
     rules: [
@@ -47,17 +54,28 @@ const config = {
       {
         test: /\.css$/i,
         use: [
-          isDevelopment ? "style-loader" : MiniCssExtractPlugin.loader,
+          isDevelopment ? 'style-loader' : MiniCssExtractPlugin.loader,
           { loader: 'css-loader', options: { url: false } },
           'postcss-loader',
         ],
       },
+      {
+        test: /\.ttf$/,
+        type: 'asset/resource',
+      },
+      {
+        test: /webworkerscript\.js$/,
+        use: { loader: 'worker-loader' },
+      },
     ],
   },
   plugins: [
-    isDevelopment ? undefined : new MiniCssExtractPlugin({
-      filename: '[name].css',
-    }),
+    isDevelopment
+      ? undefined
+      : new MiniCssExtractPlugin({
+          filename: '[name].css',
+        }),
+    new MonacoWebpackPlugin(),
     new HtmlWebpackPlugin({
       templateContent: `
       <body></body>
@@ -76,21 +94,31 @@ const config = {
       filename: 'index.html',
       inject: false,
     }),
+    // Work around for Buffer is undefined:
+    // https://github.com/webpack/changelog-v5/issues/10
+    new webpack.ProvidePlugin({
+      Buffer: ['buffer', 'Buffer'],
+    }),
+    new webpack.ProvidePlugin({
+      process: 'process/browser',
+    }),
     new ProvidePlugin({
       React: 'react',
       reactDOM: 'react-dom',
     }),
     new BannerPlugin({
       banner: (file) => {
-        return !file.chunk.name.includes(SANDBOX_SUFFIX) ? 'const IMPORT_META=import.meta;' : '';
+        return !file.chunk.name?.includes(SANDBOX_SUFFIX) && !file.chunk.name?.includes('worker')
+          ? 'const IMPORT_META=import.meta;'
+          : '';
       },
       raw: true,
     }),
     new CopyPlugin({
       patterns: [
-        {from: 'public', to: ''},
-        {from: 'README.md', to: ''}
-      ]
+        { from: 'public', to: '' },
+        { from: 'README.md', to: '' },
+      ],
     }),
     fastRefresh,
   ].filter(Boolean),
