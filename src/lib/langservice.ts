@@ -4,7 +4,7 @@ import * as translations from './translations.json';
 import * as monaco from 'monaco-editor';
 
 export class CoalescedTimer {
-  private timer: number = undefined;
+  private timer: number | undefined = undefined;
   do(ms: number, f: () => void) {
     if (this.timer) {
       clearTimeout(this.timer);
@@ -30,13 +30,15 @@ export class ReactiveValue<E> {
   }
 }
 
-export let server: lean.Server;
-export let allMessages: lean.Message[] = [];
+let server: lean.Server;
+let allMessages: lean.Message[] = [];
+export const getServer = () => server;
+export const getAllMessages = () => allMessages;
 
 export const currentlyRunning = new ReactiveValue<string[]>([]);
 function addToRunning(fn: string) {
   if (currentlyRunning.value.indexOf(fn) === -1) {
-    currentlyRunning.updated.fire([].concat([fn], currentlyRunning.value));
+    currentlyRunning.updated.fire(([] as string[]).concat([fn], currentlyRunning.value));
   }
 }
 function removeFromRunning(fn: string) {
@@ -44,10 +46,11 @@ function removeFromRunning(fn: string) {
 }
 
 const watchers = new Map<string, ModelWatcher>();
+export const setWatchers = (fn: (w: Map<string, ModelWatcher>) => void) => fn(watchers);
 
-export let delayMs = 1000;
+export let delayMs = 2000;
 
-class ModelWatcher implements monaco.IDisposable {
+export class ModelWatcher implements monaco.IDisposable {
   private changeSubscription: monaco.IDisposable;
   private syncTimer = new CoalescedTimer();
   private version = 0;
@@ -93,13 +96,13 @@ export function checkInputCompletionChange(
   model: monaco.editor.IModel
 ): void {
   if (e.changes.length !== 1) {
-    return null;
+    return;
   }
   const change = e.changes[0];
   if (change.rangeLength === 0 && triggerChars.has(change.text)) {
     completionEdit(editor, model, true);
   }
-  return null;
+  return;
 }
 
 // completionEdit() assumes that all these are 2 characters long!
@@ -133,7 +136,11 @@ function completionEdit(
   model: monaco.editor.IModel,
   triggeredByTyping: boolean
 ): void {
-  const sel = editor.getSelections();
+  const sel = editor?.getSelections();
+  if (!sel || sel.length === 0) {
+    return;
+  }
+
   const lineNum = sel[0].startLineNumber;
   const line = model.getLineContent(lineNum);
   const cursorPos = sel[0].startColumn;
@@ -231,18 +238,29 @@ class CompletionBuffer {
 }
 const completionBuffer = new CompletionBuffer();
 
-function toSeverity(severity: lean.Severity): monaco.Severity {
+function toSeverity(severity: lean.Severity): monaco.MarkerSeverity {
   switch (severity) {
     case 'warning':
-      return monaco.Severity.Warning;
+      return monaco.MarkerSeverity.Warning;
     case 'error':
-      return monaco.Severity.Error;
+      return monaco.MarkerSeverity.Error;
     case 'information':
-      return monaco.Severity.Info;
+      return monaco.MarkerSeverity.Info;
   }
 }
 
-export function registerLeanLanguage(leanJsOpts: lean.LeanJsOpts) {
+export function registerLeanLanguage() {
+  const hostPrefix = './dist/';
+  const leanJsOpts: lean.LeanJsOpts = {
+    javascript: hostPrefix + 'lean_js_js.js',
+    libraryZip: hostPrefix + 'library.zip',
+    libraryMeta: hostPrefix + 'library.info.json',
+    libraryOleanMap: hostPrefix + 'library.olean_map.json',
+    libraryKey: 'library',
+    webassemblyJs: hostPrefix + 'lean_js_wasm.js',
+    webassemblyWasm: hostPrefix + 'lean_js_wasm.wasm',
+    dbName: 'leanlibrary',
+  };
   if (server) {
     return;
   }
@@ -251,19 +269,13 @@ export function registerLeanLanguage(leanJsOpts: lean.LeanJsOpts) {
   server = new lean.Server(transport);
   server.error.on((err) => console.log('error:', err));
   server.connect();
-  // server.logMessagesToConsole = true;
-  server.logMessagesToConsole = window.localStorage.getItem('logging') === 'true';
+  server.logMessagesToConsole = true;
 
   monaco.languages.register({
     id: 'lean',
     filenamePatterns: ['*.lean'],
   });
 
-  monaco.editor.onDidCreateModel((model) => {
-    if (model.getModeId() === 'lean') {
-      watchers.set(model.uri.fsPath, new ModelWatcher(model));
-    }
-  });
   monaco.editor.onWillDisposeModel((model) => {
     const watcher = watchers.get(model.uri.fsPath);
     if (watcher) {
@@ -272,7 +284,7 @@ export function registerLeanLanguage(leanJsOpts: lean.LeanJsOpts) {
     }
   });
 
-  server.allMessages.on((allMsgs) => {
+  server?.allMessages.on((allMsgs) => {
     allMessages = allMsgs.msgs;
     for (const model of monaco.editor.getModels()) {
       const fn = model.uri.fsPath;
@@ -300,37 +312,44 @@ export function registerLeanLanguage(leanJsOpts: lean.LeanJsOpts) {
   });
 
   monaco.languages.registerCompletionItemProvider('lean', {
-    provideCompletionItems: (editor, position) =>
-      completionBuffer.wait(delayMs).then(
-        () => {
-          watchers.get(editor.uri.fsPath).syncNow();
-          return server
-            .complete(editor.uri.fsPath, position.lineNumber, position.column - 1)
-            .then((result) => {
-              const items: monaco.languages.CompletionItem[] = [];
-              for (const compl of result.completions || []) {
-                const item = {
-                  kind: monaco.languages.CompletionItemKind.Function,
-                  label: compl.text,
-                  detail: compl.type,
-                  documentation: compl.doc,
-                  range: new monaco.Range(
-                    position.lineNumber,
-                    position.column - result.prefix.length,
-                    position.lineNumber,
-                    position.column
-                  ),
-                };
-                if (compl.tactic_params) {
-                  item.detail = compl.tactic_params.join(' ');
-                }
-                items.push(item);
-              }
-              return items;
-            });
-        },
-        () => undefined
-      ),
+    provideCompletionItems: async (editor, position) => {
+      try {
+        await completionBuffer.wait(delayMs);
+        watchers.get(editor.uri.fsPath)?.syncNow();
+        const result = await server.complete(
+          editor.uri.fsPath,
+          position.lineNumber,
+          position.column - 1
+        );
+        if (!result) {
+          return { suggestions: [] } as monaco.languages.CompletionList;
+        }
+        const items: monaco.languages.CompletionItem[] = [];
+        for (const compl of result.completions || []) {
+          const item: monaco.languages.CompletionItem = {
+            kind: monaco.languages.CompletionItemKind.Function,
+            label: compl.text,
+            insertText: compl.text,
+            detail: compl.type,
+            documentation: compl.doc,
+            range: new monaco.Range(
+              position.lineNumber,
+              position.column - result.prefix.length,
+              position.lineNumber,
+              position.column
+            ),
+          };
+          if (compl.tactic_params) {
+            item.detail = compl.tactic_params.join(' ');
+          }
+          items.push(item);
+        }
+        return { suggestions: items } as monaco.languages.CompletionList;
+      } catch (e) {
+        console.log(e);
+        return { suggestions: [] } as monaco.languages.CompletionList;
+      }
+    },
   });
 
   monaco.languages.registerHoverProvider('lean', {

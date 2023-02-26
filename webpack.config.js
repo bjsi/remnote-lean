@@ -108,9 +108,18 @@ const config = {
     }),
     new BannerPlugin({
       banner: (file) => {
-        return !file.chunk.name?.includes(SANDBOX_SUFFIX) && !file.chunk.name?.includes('worker')
-          ? 'const IMPORT_META=import.meta;'
-          : '';
+        console.log('BANNER PLUGIN');
+        console.log(file.chunk.name);
+        if (file.filename?.toLowerCase().includes('worker')) {
+          console.log('skipping worker');
+          return '';
+        } else if (file.chunk.name?.includes(SANDBOX_SUFFIX)) {
+          console.log('skipping sandbox');
+          return '';
+        } else {
+          console.log('returning const IMPORT_META=import.meta;');
+          return 'const IMPORT_META=import.meta;';
+        }
       },
       raw: true,
     }),
