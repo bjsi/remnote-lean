@@ -108,16 +108,11 @@ const config = {
     }),
     new BannerPlugin({
       banner: (file) => {
-        console.log('BANNER PLUGIN');
-        console.log(file.chunk.name);
         if (file.filename?.toLowerCase().includes('worker')) {
-          console.log('skipping worker');
           return '';
         } else if (file.chunk.name?.includes(SANDBOX_SUFFIX)) {
-          console.log('skipping sandbox');
           return '';
         } else {
-          console.log('returning const IMPORT_META=import.meta;');
           return 'const IMPORT_META=import.meta;';
         }
       },

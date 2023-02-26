@@ -346,7 +346,6 @@ export function registerLeanLanguage() {
         }
         return { suggestions: items } as monaco.languages.CompletionList;
       } catch (e) {
-        console.log(e);
         return { suggestions: [] } as monaco.languages.CompletionList;
       }
     },

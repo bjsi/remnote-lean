@@ -42,7 +42,9 @@ export function GoalWidget({ goal, position }: GoalWidgetProps) {
       {position.line}:{position.column}: goal
     </div>
   );
-  const goalStateBody = goal.state && <pre className="code-block">{goal.state}</pre>;
+
+  const goalStateText = (goal.state = 'no goals' ? '🎉 Proof Complete' : goal.state);
+  const goalStateBody = goal.state && <pre className="code-block">{goalStateText}</pre>;
 
   return (
     // put tactic state first so that there's less jumping around when the cursor moves
