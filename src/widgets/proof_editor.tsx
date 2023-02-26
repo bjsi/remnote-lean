@@ -9,16 +9,18 @@ export const ProofEditor = () => {
   const ctx = useRunAsync(() => plugin.widget.getWidgetContext<WidgetLocation.Pane>(), []);
   const data = ctx?.contextData;
   const remId = data?.remId;
+  const rem = useRunAsync(() => plugin.rem.findOne(remId), [remId]);
   return (
     <LeanEditor
+      remId={remId}
+      plugin={plugin}
       file={fn}
       initialValue={defaultProofText}
-      onValueChange={async (value) => {
-        const rem = await plugin.rem.findOne(remId);
-        if (rem) {
-          // await rem.setBackText([value]);
-        }
-      }}
+      // onValueChange={async (value) => {
+      //   if (rem) {
+      //     // await rem.setBackText([value]);
+      //   }
+      // }}
     />
   );
 };

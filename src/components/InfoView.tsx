@@ -6,13 +6,15 @@ import {
   getServer,
   registerLeanLanguage,
 } from '../lib/langservice';
-import { leanColorize } from '../lib/utils';
 import { GoalWidget } from './GoalWidget';
 import { MessageWidget } from './MessageWidget';
 import { DisplayMode, GoalWidgetProps, Position } from './types';
 import * as monaco from 'monaco-editor';
+import { RNPlugin } from '@remnote/plugin-sdk';
 
 interface InfoViewProps {
+  plugin: RNPlugin;
+  onSave: () => void;
   file: string;
   cursor?: Position;
 }
@@ -105,23 +107,32 @@ export class InfoView extends React.Component<InfoViewProps, InfoViewState> {
     const msgs = filteredMsgs.map((msg, i) => <div key={i}>{MessageWidget({ msg })}</div>);
     return (
       <div style={{ overflow: 'auto', height: '100%' }}>
-        <div className="infoview-buttons">
+        <div className="infoview-buttons flex flex-row gap-2">
           <img
-            src="./display-goal-light.svg"
+            src={this.props.plugin.rootURL + '/display-goal-light.svg'}
             title="Display Goal"
             style={{ opacity: this.state.displayMode === DisplayMode.OnlyState ? 1 : 0.25 }}
             onClick={() => {
               this.setState({ displayMode: DisplayMode.OnlyState });
             }}
           />
+          <span>Goal</span>
           <img
-            src="./display-list-light.svg"
+            src={this.props.plugin.rootURL + './display-list-light.svg'}
             title="Display Messages"
             style={{ opacity: this.state.displayMode === DisplayMode.AllMessage ? 1 : 0.25 }}
             onClick={() => {
               this.setState({ displayMode: DisplayMode.AllMessage });
             }}
           />
+          <span>All Messages</span>
+          <button
+            onClick={() => {
+              this.props.onSave();
+            }}
+          >
+            💾 Save
+          </button>
         </div>
         {this.state.displayMode === DisplayMode.OnlyState && this.state.goal && (
           <div key={'goal'}>

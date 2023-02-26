@@ -11,8 +11,11 @@ import {
 import { findDOMNode } from 'react-dom';
 import { PageHeader } from './PageHeader';
 import { InfoView } from './InfoView';
+import { RNPlugin } from '@remnote/plugin-sdk';
 
 interface LeanEditorProps {
+  remId: string;
+  plugin: RNPlugin;
   file: string;
   initialValue: string;
   onValueChange?: (value: string) => void;
@@ -60,12 +63,12 @@ export class LeanEditor extends React.Component<LeanEditorProps, LeanEditorState
 
   componentDidMount() {
     const node = findDOMNode(this.refs.monaco) as HTMLElement;
-    const DEFAULT_FONT_SIZE = 12;
-    const options: monaco.editor.IEditorConstructionOptions = {
+    const DEFAULT_FONT_SIZE = 16;
+    const options: monaco.editor.IStandaloneEditorConstructionOptions = {
       selectOnLineNumbers: true,
       roundedSelection: false,
       readOnly: false,
-      theme: 'vs',
+      theme: 'vs-dark',
       cursorStyle: 'line',
       automaticLayout: true,
       cursorBlinking: 'solid',
@@ -113,14 +116,33 @@ export class LeanEditor extends React.Component<LeanEditorProps, LeanEditorState
 
   render() {
     return (
-      <div className="leaneditorContainer">
+      <div className="leaneditorContainer min-height-[100%] max-h-[100%] h-[100%] py-2 box-border">
         <div className="headerContainer">
           <PageHeader file={this.props.file} status={this.state.status!} />
         </div>
         <div className="editorContainer" ref="root">
-          <div ref="monaco" className="monacoContainer h-[500px]" />
+          <div
+            ref="monaco"
+            className="monacoContainer "
+            style={{
+              height: '60%',
+              minHeight: '60%',
+              maxHeight: '60%',
+            }}
+          />
           <div className="infoContainer">
-            <InfoView file={this.props.file} cursor={this.state.cursor} />
+            <InfoView
+              onSave={() => {
+                this.props.plugin.rem.findOne(this.props.remId).then((rem) => {
+                  if (rem) {
+                    rem.setBackText([model.getValue()]);
+                  }
+                });
+              }}
+              file={this.props.file}
+              cursor={this.state.cursor}
+              plugin={this.props.plugin}
+            />
           </div>
         </div>
       </div>

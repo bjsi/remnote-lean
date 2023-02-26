@@ -48,7 +48,7 @@ function removeFromRunning(fn: string) {
 const watchers = new Map<string, ModelWatcher>();
 export const setWatchers = (fn: (w: Map<string, ModelWatcher>) => void) => fn(watchers);
 
-export let delayMs = 2000;
+export let delayMs = 500;
 
 export class ModelWatcher implements monaco.IDisposable {
   private changeSubscription: monaco.IDisposable;
@@ -106,7 +106,7 @@ export function checkInputCompletionChange(
 }
 
 // completionEdit() assumes that all these are 2 characters long!
-const hackyReplacements = {
+const hackyReplacements: Record<string, string> = {
   ['{{}}']: '⦃⦄',
   ['[[]]']: '⟦⟧',
   ['<>']: '⟨⟩',
@@ -125,10 +125,10 @@ export function checkInputCompletionPosition(
   const index = line.lastIndexOf('\\', cursorPos - 1) + 1;
   const match = line.substring(index, cursorPos - 1);
   // ordinary completion
-  const replaceText = index && translations[match];
+  const replaceText = index && (translations as Record<string, string>)[match];
   // hacky completions put the cursor between paired Unicode brackets
   const hackyReplacement = index && hackyReplacements[match];
-  return replaceText || hackyReplacement;
+  return !!(replaceText || hackyReplacement);
 }
 
 function completionEdit(
@@ -147,9 +147,9 @@ function completionEdit(
   const index = line.lastIndexOf('\\', cursorPos - 1) + 1;
   const match = line.substring(index, cursorPos - 1);
   // ordinary completion
-  const replaceText = index && translations[match];
+  const replaceText = index && (translations as Record<string, string>)[match];
   // hacky completions put the cursor between paired Unicode brackets
-  const hackyReplacement = index && hackyReplacements[match];
+  const hackyReplacement = index ? hackyReplacements[match] : undefined;
   if (replaceText || hackyReplacement) {
     if (triggeredByTyping) {
       const range1 = new monaco.Range(lineNum, index, lineNum, cursorPos);
@@ -157,9 +157,8 @@ function completionEdit(
         null,
         [
           {
-            identifier: { major: 1, minor: 1 },
             range: range1,
-            text: replaceText || hackyReplacement[0],
+            text: replaceText || hackyReplacement![0],
             forceMoveMarkers: false,
           },
         ],
@@ -172,7 +171,6 @@ function completionEdit(
           null,
           [
             {
-              identifier: { major: 1, minor: 1 },
               range: range2,
               text: hackyReplacement[1],
               forceMoveMarkers: false,
@@ -192,9 +190,8 @@ function completionEdit(
         null,
         [
           {
-            identifier: { major: 1, minor: 1 },
             range,
-            text: replaceText || hackyReplacement,
+            text: replaceText || hackyReplacement!,
             forceMoveMarkers: false,
           },
         ],
@@ -215,8 +212,8 @@ export function tabHandler(
 }
 
 class CompletionBuffer {
-  private reject: (reason: any) => void;
-  private timer;
+  private reject?: (reason: any) => void;
+  private timer?: NodeJS.Timeout;
 
   wait(ms: number): Promise<void> {
     this.cancel();
@@ -231,7 +228,7 @@ class CompletionBuffer {
   cancel() {
     if (this.timer) {
       clearTimeout(this.timer);
-      this.reject('timeout');
+      this.reject?.('timeout');
       this.timer = undefined;
     }
   }
@@ -269,7 +266,6 @@ export function registerLeanLanguage() {
   server = new lean.Server(transport);
   server.error.on((err) => console.log('error:', err));
   server.connect();
-  server.logMessagesToConsole = true;
 
   monaco.languages.register({
     id: 'lean',
@@ -352,45 +348,44 @@ export function registerLeanLanguage() {
   });
 
   monaco.languages.registerHoverProvider('lean', {
-    provideHover: (editor, position): Promise<monaco.languages.Hover> => {
-      return server
-        .info(editor.uri.fsPath, position.lineNumber, position.column - 1)
-        .then((response) => {
-          const marked: monaco.MarkedString[] = [];
-          const record = response.record;
-          if (!record) {
-            return { contents: [] } as monaco.languages.Hover;
-          }
-          const name = record['full-id'] || record.text;
-          if (name) {
-            if (response.record.tactic_params) {
-              marked.push({
-                language: 'text',
-                value: name + ' ' + record.tactic_params.join(' '),
-              });
-            } else {
-              marked.push({
-                language: 'lean',
-                value: name + ' : ' + record.type,
-              });
-            }
-          }
-          if (response.record.doc) {
-            marked.push(response.record.doc);
-          }
-          if (response.record.state) {
-            marked.push({ language: 'lean', value: record.state });
-          }
-          return {
-            contents: marked,
-            range: {
-              startLineNumber: position.lineNumber,
-              startColumn: position.column,
-              endLineNumber: position.lineNumber,
-              endColumn: position.column,
-            },
-          };
-        });
+    provideHover: async (editor, position): Promise<monaco.languages.Hover> => {
+      const response = await server.info(
+        editor.uri.fsPath,
+        position.lineNumber,
+        position.column - 1
+      );
+      const marked: monaco.IMarkdownString[] = [];
+      const record = response.record;
+      if (!record) {
+        return { contents: [] } as monaco.languages.Hover;
+      }
+      const name = record['full-id'] || record.text;
+      if (name) {
+        if (record.tactic_params) {
+          marked.push({
+            value: name + ' ' + record.tactic_params.join(' '),
+          });
+        } else {
+          marked.push({
+            value: name + ' : ' + record.type,
+          });
+        }
+      }
+      if (record.doc) {
+        marked.push({ value: record.doc });
+      }
+      if (record.state) {
+        marked.push({ value: record.state });
+      }
+      return {
+        contents: marked,
+        range: {
+          startLineNumber: position.lineNumber,
+          startColumn: position.column,
+          endLineNumber: position.lineNumber,
+          endColumn: position.column,
+        },
+      };
     },
   });
 
