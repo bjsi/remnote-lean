@@ -68,7 +68,7 @@ export class LeanEditor extends React.Component<LeanEditorProps, LeanEditorState
       selectOnLineNumbers: true,
       roundedSelection: false,
       readOnly: false,
-      theme: 'vs-dark',
+      theme: 'vs',
       cursorStyle: 'line',
       automaticLayout: true,
       cursorBlinking: 'solid',
