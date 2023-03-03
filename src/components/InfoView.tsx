@@ -106,7 +106,7 @@ export class InfoView extends React.Component<InfoViewProps, InfoViewState> {
           });
     const msgs = filteredMsgs.map((msg, i) => <div key={i}>{MessageWidget({ msg })}</div>);
     return (
-      <div style={{ overflow: 'auto', height: '100%' }}>
+      <div style={{ overflow: 'auto', height: '60%' }}>
         <div className="infoview-buttons flex flex-row gap-2">
           <img
             src={this.props.plugin.rootURL + '/display-goal-light.svg'}

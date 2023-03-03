@@ -173,12 +173,12 @@ export class LeanEditor extends React.Component<LeanEditorProps, LeanEditorState
           />
           <div className="infoContainer">
             <InfoView
-              onSave={() => {
-                this.props.plugin.rem.findOne(this.props.remId).then((rem) => {
-                  if (rem) {
-                    rem.setBackText([model.getValue()]);
-                  }
-                });
+              onSave={async () => {
+                const rem = await this.props.plugin.rem.findOne(this.props.remId);
+                if (rem) {
+                  await rem.setBackText([model.getValue()]);
+                  await rem.setPracticeDirection("none");
+                }
               }}
               file={this.props.file}
               cursor={this.state.cursor}
