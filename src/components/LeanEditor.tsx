@@ -12,13 +12,16 @@ import { findDOMNode } from 'react-dom';
 import { PageHeader } from './PageHeader';
 import { InfoView } from './InfoView';
 import { RNPlugin } from '@remnote/plugin-sdk';
+import { partition } from '../lib/utils';
 
 interface LeanEditorProps {
   remId: string;
+  includeRemIds?: string[];
   plugin: RNPlugin;
   file: string;
   initialValue: string;
   onValueChange?: (value: string) => void;
+  isDarkMode: boolean;
 }
 interface LeanEditorState {
   cursor?: Position;
@@ -31,8 +34,13 @@ interface LeanEditorState {
 
 let model: monaco.editor.IModel;
 
+interface IMyStandaloneCodeEditor extends monaco.editor.IStandaloneCodeEditor {
+  // used for importing hidden code from other Rem
+  setHiddenAreas(range: monaco.IRange[]): void;
+}
+
 export class LeanEditor extends React.Component<LeanEditorProps, LeanEditorState> {
-  editor: monaco.editor.IStandaloneCodeEditor | undefined;
+  editor: IMyStandaloneCodeEditor | undefined;
   constructor(props: LeanEditorProps) {
     super(props);
     this.state = {
@@ -42,6 +50,33 @@ export class LeanEditor extends React.Component<LeanEditorProps, LeanEditorState
       checked: true,
       lastFileName: this.props.file,
     };
+    this.initModel();
+  }
+
+  async getExtraHiddenCode() {
+    const rems = (await this.props.plugin.rem.findMany(this.props.includeRemIds || [])) || [];
+
+    // make it work in such a way that I can still add extra imports to the code if needed
+
+    // TODO
+    const codes = await Promise.all(
+      rems.map(async (x) => this.props.plugin.richText.toString(x.text))
+    );
+    // code without imports
+    const code: string[] = [];
+    // unique imports
+    const imports: string[] = [];
+
+    for (const c of codes) {
+      const [importCode, codeCode] = partition(c.split('\n'), (x) => x.trim().startsWith('import'));
+      code.push(codeCode.join('\n'));
+      imports.push(...importCode);
+    }
+
+    return;
+  }
+
+  initModel() {
     if (!model) {
       model = monaco.editor.createModel(
         this.props.initialValue,
@@ -54,11 +89,17 @@ export class LeanEditor extends React.Component<LeanEditorProps, LeanEditorState
     model.onDidChangeContent((e) => {
       checkInputCompletionChange(e, this.editor!, model);
       const val = model.getValue();
-
-      // do not change code URL param unless user has actually typed
-      // (this makes the #url=... param a little more "sticky")
       return (!e.isFlush || !val) && this.props.onValueChange && this.props.onValueChange(val);
     });
+  }
+  componentDidUpdate(
+    prevProps: Readonly<LeanEditorProps>,
+    prevState: Readonly<LeanEditorState>,
+    snapshot?: any
+  ): void {
+    if (this.props.isDarkMode != prevProps.isDarkMode) {
+      monaco.editor.setTheme(this.props.isDarkMode ? 'vs-dark' : 'vs');
+    }
   }
 
   componentDidMount() {
@@ -78,7 +119,7 @@ export class LeanEditor extends React.Component<LeanEditorProps, LeanEditorState
       scrollBeyondLastLine: false,
       fontSize: DEFAULT_FONT_SIZE,
     };
-    this.editor = monaco.editor.create(node, options);
+    this.editor = monaco.editor.create(node, options) as IMyStandaloneCodeEditor;
 
     // context key which keeps track of whether unicode translation is possible
     const canTranslate = this.editor.createContextKey<boolean>('canTranslate', false);
