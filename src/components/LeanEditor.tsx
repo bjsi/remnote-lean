@@ -12,17 +12,20 @@ import { findDOMNode } from 'react-dom';
 import { PageHeader } from './PageHeader';
 import { InfoView } from './InfoView';
 import { RNPlugin } from '@remnote/plugin-sdk';
+import clsx from 'clsx';
 import { partition } from '../lib/utils';
 
 interface LeanEditorProps {
-  remId: string;
+  remId?: string;
   includeRemIds?: string[];
   plugin: RNPlugin;
   file: string;
   initialValue: string;
   onValueChange?: (value: string) => void;
   isDarkMode: boolean;
+  split: 'vertical' | 'horizontal';
 }
+
 interface LeanEditorState {
   cursor?: Position;
   split: 'vertical' | 'horizontal';
@@ -161,15 +164,19 @@ export class LeanEditor extends React.Component<LeanEditorProps, LeanEditorState
         <div className="headerContainer">
           <PageHeader file={this.props.file} status={this.state.status!} />
         </div>
-        <div className="editorContainer" ref="root">
+        <div
+          className={clsx(
+            'flex editorContainer',
+            this.props.split === 'horizontal' ? 'flex-col' : 'flex-row'
+          )}
+          ref="root"
+        >
           <div
             ref="monaco"
-            className="monacoContainer "
-            style={{
-              height: '60%',
-              minHeight: '60%',
-              maxHeight: '60%',
-            }}
+            className={clsx(
+              'monacoContainer ',
+              this.props.split === 'vertical' ? 'w-[60%]' : 'h-[60%]'
+            )}
           />
           <div className="infoContainer">
             <InfoView
@@ -177,7 +184,7 @@ export class LeanEditor extends React.Component<LeanEditorProps, LeanEditorState
                 const rem = await this.props.plugin.rem.findOne(this.props.remId);
                 if (rem) {
                   await rem.setBackText([model.getValue()]);
-                  await rem.setPracticeDirection("none");
+                  await rem.setPracticeDirection('none');
                 }
               }}
               file={this.props.file}
