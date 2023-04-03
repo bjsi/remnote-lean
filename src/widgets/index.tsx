@@ -1,28 +1,23 @@
 import { declareIndexPlugin, ReactRNPlugin, WidgetLocation } from '@remnote/plugin-sdk';
 import '../style.css';
 import '../App.css';
-import { defaultProofText, leanProofPowerupCode } from '../lib/const';
+import { defaultProofText, inlineEditorsOpenStatesKey, leanProofPowerupCode } from '../lib/const';
 
 async function onActivate(plugin: ReactRNPlugin) {
   await registerLeanProofPowerup(plugin);
   await registerApplyLeanProofCommand(plugin);
   await registerPaneProofEditorWidget(plugin);
+  await registerOpenInlineProofEditorButton(plugin);
+  await plugin.storage.setSession(inlineEditorsOpenStatesKey, []);
 }
 
 async function onDeactivate(_: ReactRNPlugin) {}
 
-const remIdInlineEditorMap: Record<string, boolean> = {};
-
-async function toggleInlineProofEditor(plugin: ReactRNPlugin, remId: string) {
-  if (remIdInlineEditorMap[remId]) {
-    await plugin.window.closeWidget('inline_proof_editor', { remId });
-    remIdInlineEditorMap[remId] = false;
-  } else {
-    await plugin.app.registerWidget('inline_proof_editor', WidgetLocation.UnderRemEditor, {
-      dimensions: { height: 'auto', width: '100%' },
-      remIdFilter: remId,
-    });
-  }
+async function registerOpenInlineProofEditorButton(plugin: ReactRNPlugin) {
+  await plugin.app.registerWidget('toggle_inline_proof_editor', WidgetLocation.UnderRemEditor, {
+    dimensions: { height: 'auto', width: '100%' },
+    powerupFilter: leanProofPowerupCode,
+  });
 }
 
 async function registerLeanProofPowerup(plugin: ReactRNPlugin) {
