@@ -9,7 +9,7 @@
     "build": "npx remnote-plugin validate && shx rm -rf dist && cross-env NODE_ENV=production webpack --color --progress && shx cp README.md dist && cd dist && bestzip ../PluginZip.zip ./*"
   },
   "dependencies": {
-    "@remnote/plugin-sdk": "^0.0.23",
+    "@remnote/plugin-sdk": "^0.0.28",
     "buffer": "^6.0.3",
     "clsx": "^1.2.1",
     "lean-client-js-browser": "^2.0.1",

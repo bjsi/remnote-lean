@@ -1,11 +1,6 @@
 import { Message } from 'lean-client-js-browser';
 import React from 'react';
-import {
-  getAllMessages,
-  currentlyRunning,
-  getServer,
-  registerLeanLanguage,
-} from '../lib/langservice';
+import { getAllMessages, getServer, registerLeanLanguage } from '../lib/langservice';
 import { GoalWidget } from './GoalWidget';
 import { MessageWidget } from './MessageWidget';
 import { DisplayMode, GoalWidgetProps, Position } from './types';

@@ -1,6 +1,6 @@
 import { usePlugin, useAPIEventListener, AppEvents, useTracker } from '@remnote/plugin-sdk';
 import React from 'react';
-import { defaultProofText } from '../lib/const';
+import { defaultProofText, leanCodeSlotId, leanProofPowerupCode } from '../lib/const';
 import { LeanEditor } from './LeanEditor';
 import * as monaco from 'monaco-editor';
 
@@ -25,11 +25,11 @@ export const ProofEditor = (props: ProofEditorProps) => {
       initialValue={defaultProofText}
       isDarkMode={isDarkMode}
       split={props.split}
-      // onValueChange={async (value) => {
-      //   if (rem) {
-      //     // await rem.setPowerupProperty...
-      //   }
-      // }}
+      onValueChange={async (value) => {
+        if (rem) {
+          await rem.setPowerupProperty(leanProofPowerupCode, leanCodeSlotId, [value]);
+        }
+      }}
     />
   );
 };
