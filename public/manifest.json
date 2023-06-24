@@ -1,5 +1,5 @@
 {
-  "author": "james",
+  "author": "Jamesb",
   "name": "Lean Theorem Prover",
   "description": "Adds support for interactive theorem proving using Lean",
   "enableOnMobile": false,
@@ -9,7 +9,7 @@
   "version": {
     "major": 0,
     "minor": 0,
-    "patch": 2
+    "patch": 3
   },
   "requestNative": false,
   "requiredScopes": [
