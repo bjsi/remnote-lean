@@ -15,6 +15,7 @@
 - Tag a statement you would like to prove with the Lean Proof powerup by using the `Lean Proof` command in the omnibar.
 - This will open a new pane containing a code editor where you can write your proof.
 - The goal state is shown beneath the code editor.
+- Whatever you type in the code editor gets saved inside a hidden slot on the Rem.
 
 #### Example
 
@@ -22,4 +23,4 @@
 
 ### Credits
 
-Most of the code is adapted from the wonderful [Lean Web Editor](https://github.com/leanprover-community/lean-web-editor) repository.
+- Most of the code is adapted from the wonderful [Lean Web Editor](https://github.com/leanprover-community/lean-web-editor) repository and the Lean VSCode plugin.
