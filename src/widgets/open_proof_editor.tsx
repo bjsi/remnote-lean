@@ -8,15 +8,18 @@ export const OpenProofEditor = () => {
   );
   const remId = ctx?.remId;
   return (
-    <button
-      onClick={() => {
-        plugin.window.openWidgetInPane('proof_editor', {
-          remId,
-        });
-      }}
-    >
-      👨‍💻
-    </button>
+    <div className="flex items-center justify-center">
+      <button
+        className="flex items-center justify-center "
+        onClick={() => {
+          plugin.window.openWidgetInPane('pane_proof_editor', {
+            remId,
+          });
+        }}
+      >
+        <div>👨‍💻</div>
+      </button>
+    </div>
   );
 };
 

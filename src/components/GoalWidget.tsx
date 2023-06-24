@@ -1,8 +1,31 @@
 import React from 'react';
-import { leanColorize } from '../lib/utils';
+import { colorizeMessage, leanColorize } from '../lib/utils';
 import { GoalWidgetProps } from './types';
 
-export function GoalWidget({ goal, position }: GoalWidgetProps) {
+interface GoalProps {
+  goalState: string | undefined;
+  darkMode: boolean;
+}
+
+export function Goal(props: GoalProps): React.ReactNode {
+  if (!props.goalState) {
+    return null;
+  }
+  let goalString = props.goalState.replace(/^(no goals)/gm, 'goals accomplished 🎉');
+  goalString = RegExp('^\\d+ goals|goals accomplished', 'mg').test(goalString)
+    ? goalString
+    : '1 goal\n'.concat(goalString);
+  const goalElem = colorizeMessage(goalString, props.darkMode);
+  return (
+    <div>
+      <pre className="font-code" style={{ whiteSpace: 'pre-wrap' }}>
+        {goalElem}
+      </pre>
+    </div>
+  );
+}
+
+export function GoalWidget({ goal, position, darkMode }: GoalWidgetProps) {
   const tacticHeader = goal.text && (
     <div className="info-header doc-header">
       {position.line}:{position.column}: tactic{' '}
@@ -37,19 +60,10 @@ export function GoalWidget({ goal, position }: GoalWidgetProps) {
       />
     );
 
-  const goalStateHeader = goal.state && (
-    <div className="info-header">
-      {position.line}:{position.column}: goal
-    </div>
-  );
-
-  const goalStateBody = goal.state && <pre className="code-block">{goal.state}</pre>;
-
   return (
     // put tactic state first so that there's less jumping around when the cursor moves
-    <div>
-      {goalStateHeader}
-      {goalStateBody}
+    <div className="px-3">
+      <Goal goalState={goal.state} darkMode={darkMode} />
       {tacticHeader || typeHeader}
       {typeBody}
       {docs}

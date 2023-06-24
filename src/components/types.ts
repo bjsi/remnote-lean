@@ -13,4 +13,5 @@ export enum DisplayMode {
 export interface GoalWidgetProps {
   goal: InfoRecord;
   position: Position;
+  darkMode: boolean;
 }

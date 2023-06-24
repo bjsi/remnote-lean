@@ -11,6 +11,8 @@ export function MessageWidget({ msg }: MessageWidgetProps) {
     warning: 'orange',
     error: 'red',
   };
+
+  console.log(msg);
   // TODO: links and decorations on hover
   return (
     <div style={{ paddingBottom: '1em' }}>

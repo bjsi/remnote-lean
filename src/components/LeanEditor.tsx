@@ -1,4 +1,3 @@
-import { Position } from 'monaco-editor';
 import React from 'react';
 import * as monaco from 'monaco-editor';
 import {
@@ -13,7 +12,7 @@ import { PageHeader } from './PageHeader';
 import { InfoView } from './InfoView';
 import { RNPlugin } from '@remnote/plugin-sdk';
 import clsx from 'clsx';
-import { partition } from '../lib/utils';
+import { Position } from './types';
 
 interface LeanEditorProps {
   remId?: string;
@@ -23,12 +22,10 @@ interface LeanEditorProps {
   initialValue: string;
   onValueChange?: (value: string) => void;
   isDarkMode: boolean;
-  split: 'vertical' | 'horizontal';
 }
 
 interface LeanEditorState {
   cursor?: Position;
-  split: 'vertical' | 'horizontal';
   status: string | null;
   size: number | null;
   checked: boolean;
@@ -47,36 +44,12 @@ export class LeanEditor extends React.Component<LeanEditorProps, LeanEditorState
   constructor(props: LeanEditorProps) {
     super(props);
     this.state = {
-      split: 'vertical',
       status: null,
       size: null,
       checked: true,
       lastFileName: this.props.file,
     };
     this.initModel();
-  }
-
-  async getExtraHiddenCode() {
-    const rems = (await this.props.plugin.rem.findMany(this.props.includeRemIds || [])) || [];
-
-    // make it work in such a way that I can still add extra imports to the code if needed
-
-    // TODO
-    const codes = await Promise.all(
-      rems.map(async (x) => this.props.plugin.richText.toString(x.text))
-    );
-    // code without imports
-    const code: string[] = [];
-    // unique imports
-    const imports: string[] = [];
-
-    for (const c of codes) {
-      const [importCode, codeCode] = partition(c.split('\n'), (x) => x.trim().startsWith('import'));
-      code.push(codeCode.join('\n'));
-      imports.push(...importCode);
-    }
-
-    return;
   }
 
   initModel() {
@@ -144,11 +117,6 @@ export class LeanEditor extends React.Component<LeanEditorProps, LeanEditorState
     this.editor = undefined;
   }
 
-  onSubmit(value: string) {
-    const lastFileName = value.split('#').shift().split('?').shift().split('/').pop();
-    this.setState({ url: value, lastFileName });
-  }
-
   onLoad(fileStr: string, lastFileName: string) {
     model.setValue(fileStr);
     this.setState({ lastFileName });
@@ -164,22 +132,11 @@ export class LeanEditor extends React.Component<LeanEditorProps, LeanEditorState
         <div className="headerContainer">
           <PageHeader file={this.props.file} status={this.state.status!} />
         </div>
-        <div
-          className={clsx(
-            'flex editorContainer',
-            this.props.split === 'horizontal' ? 'flex-col' : 'flex-row'
-          )}
-          ref="root"
-        >
-          <div
-            ref="monaco"
-            className={clsx(
-              'monacoContainer ',
-              this.props.split === 'vertical' ? 'w-[60%]' : 'h-[60%]'
-            )}
-          />
-          <div className="infoContainer">
+        <div className={clsx('flex editorContainer h-[100%]', 'flex-col')} ref="root">
+          <div ref="monaco" className={clsx('monacoContainer', 'h-[50%]')} />
+          <div className="infoContainer h-[100%]">
             <InfoView
+              darkMode={this.props.isDarkMode}
               onSave={async () => {
                 const rem = await this.props.plugin.rem.findOne(this.props.remId);
                 if (rem) {

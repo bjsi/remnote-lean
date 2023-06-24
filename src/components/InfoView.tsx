@@ -12,7 +12,9 @@ interface InfoViewProps {
   onSave: () => void;
   file: string;
   cursor?: Position;
+  darkMode: boolean;
 }
+
 interface InfoViewState {
   goal?: GoalWidgetProps;
   messages: Message[];
@@ -78,7 +80,7 @@ export class InfoView extends React.Component<InfoViewProps, InfoViewState> {
       .info(nextProps.file, position.line, position.column)
       .then((res) => {
         if (res.record) {
-          this.setState({ goal: { goal: res.record, position } });
+          this.setState({ goal: { goal: res.record, position, darkMode: this.props.darkMode } });
         }
       });
   }
@@ -121,17 +123,14 @@ export class InfoView extends React.Component<InfoViewProps, InfoViewState> {
             }}
           />
           <span>All Messages</span>
-          <button
-            onClick={() => {
-              this.props.onSave();
-            }}
-          >
-            💾 Save
-          </button>
         </div>
         {this.state.displayMode === DisplayMode.OnlyState && this.state.goal && (
           <div key={'goal'}>
-            <GoalWidget goal={this.state.goal.goal} position={this.state.goal.position} />
+            <GoalWidget
+              goal={this.state.goal.goal}
+              position={this.state.goal.position}
+              darkMode={this.props.darkMode}
+            />
           </div>
         )}
         {msgs}

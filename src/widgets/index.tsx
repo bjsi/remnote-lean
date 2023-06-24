@@ -6,6 +6,7 @@ import { leanCodeSlotId, leanProofPowerupCode } from '../lib/const';
 async function onActivate(plugin: ReactRNPlugin) {
   await registerLeanProofPowerup(plugin);
   await registerApplyLeanProofCommand(plugin);
+  await registerOpenPaneProofEditorWidget(plugin);
   await registerPaneProofEditorWidget(plugin);
 }
 
@@ -21,6 +22,7 @@ async function registerLeanProofPowerup(plugin: ReactRNPlugin) {
         {
           name: 'Lean',
           code: leanCodeSlotId,
+          hidden: true,
         },
       ],
     }
@@ -41,8 +43,15 @@ async function registerApplyLeanProofCommand(plugin: ReactRNPlugin) {
   });
 }
 
+async function registerOpenPaneProofEditorWidget(plugin: ReactRNPlugin) {
+  await plugin.app.registerWidget('open_proof_editor', WidgetLocation.RightSideOfEditor, {
+    dimensions: { height: 'auto', width: '25px' },
+    powerupFilter: leanProofPowerupCode,
+  });
+}
+
 async function registerPaneProofEditorWidget(plugin: ReactRNPlugin) {
-  await plugin.app.registerWidget('proof_editor', WidgetLocation.Pane, {
+  await plugin.app.registerWidget('pane_proof_editor', WidgetLocation.Pane, {
     dimensions: { height: 'auto', width: '100%' },
   });
 }

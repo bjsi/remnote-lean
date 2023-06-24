@@ -1,4 +1,10 @@
-import { usePlugin, useAPIEventListener, AppEvents, useTracker } from '@remnote/plugin-sdk';
+import {
+  usePlugin,
+  useAPIEventListener,
+  AppEvents,
+  useTracker,
+  useRunAsync,
+} from '@remnote/plugin-sdk';
 import React from 'react';
 import { defaultProofText, leanCodeSlotId, leanProofPowerupCode } from '../lib/const';
 import { LeanEditor } from './LeanEditor';
@@ -17,14 +23,26 @@ export const ProofEditor = (props: ProofEditorProps) => {
   useAPIEventListener(AppEvents.setDarkMode, undefined, ({ darkMode }) => {
     setDarkMode(darkMode);
   });
+
+  const initText = useRunAsync(async () => {
+    if (rem) {
+      return (
+        (await rem.getPowerupProperty(leanProofPowerupCode, leanCodeSlotId)) || defaultProofText
+      );
+    }
+  }, [rem?._id]);
+
+  if (initText == undefined) {
+    return null;
+  }
+
   return (
     <LeanEditor
       remId={props.remId}
       plugin={plugin}
       file={fn}
-      initialValue={defaultProofText}
+      initialValue={initText}
       isDarkMode={isDarkMode}
-      split={props.split}
       onValueChange={async (value) => {
         if (rem) {
           await rem.setPowerupProperty(leanProofPowerupCode, leanCodeSlotId, [value]);
