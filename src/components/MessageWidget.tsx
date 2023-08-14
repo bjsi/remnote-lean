@@ -16,10 +16,10 @@ export function MessageWidget({ msg }: MessageWidgetProps) {
   // TODO: links and decorations on hover
   return (
     <div style={{ paddingBottom: '1em' }}>
-      <div className="info-header" style={{ color: colorOfSeverity[msg.severity] }}>
+      <div className="" style={{ color: colorOfSeverity[msg.severity] }}>
         {msg.pos_line}:{msg.pos_col}: {msg.severity}: {msg.caption}
       </div>
-      <div className="code-block" dangerouslySetInnerHTML={{ __html: leanColorize(msg.text) }} />
+      <div className="" dangerouslySetInnerHTML={{ __html: leanColorize(msg.text) }} />
     </div>
   );
 }

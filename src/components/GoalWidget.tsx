@@ -27,10 +27,10 @@ export function Goal(props: GoalProps): React.ReactNode {
 
 export function GoalWidget({ goal, position, darkMode }: GoalWidgetProps) {
   const tacticHeader = goal.text && (
-    <div className="info-header doc-header">
+    <div className="">
       {position.line}:{position.column}: tactic{' '}
       {
-        <span className="code-block" style={{ fontWeight: 'normal', display: 'inline' }}>
+        <span className="" style={{ fontWeight: 'normal', display: 'inline' }}>
           {goal.text}
         </span>
       }
@@ -39,13 +39,13 @@ export function GoalWidget({ goal, position, darkMode }: GoalWidgetProps) {
   const docs = goal.doc && <ToggleDoc doc={goal.doc} />;
 
   const typeHeader = goal.type && (
-    <div className="info-header">
+    <div className="">
       {position.line}:{position.column}: type{' '}
       {goal['full-id'] && (
         <span>
           {' '}
           of{' '}
-          <span className="code-block" style={{ fontWeight: 'normal', display: 'inline' }}>
+          <span className="" style={{ fontWeight: 'normal', display: 'inline' }}>
             {goal['full-id']}
           </span>
         </span>
@@ -55,7 +55,7 @@ export function GoalWidget({ goal, position, darkMode }: GoalWidgetProps) {
   const typeBody = goal.type &&
     !goal.text && ( // don't show type of tactics
       <div
-        className="code-block"
+        className=""
         dangerouslySetInnerHTML={{ __html: leanColorize(goal.type) + (!goal.doc && '<br />') }}
       />
     );
@@ -88,7 +88,7 @@ class ToggleDoc extends React.Component<ToggleDocProps, ToggleDocState> {
   }
   render() {
     return (
-      <div onClick={this.onClick} className="toggleDoc">
+      <div onClick={this.onClick} className="">
         {this.state.showDoc ? (
           this.props.doc // TODO: markdown / highlighting?
         ) : (

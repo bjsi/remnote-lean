@@ -48,13 +48,8 @@ export class PageHeader extends React.Component<PageHeaderProps, PageHeaderState
     // checkbox for console spam
     // server.logMessagesToConsole = true;
     return (
-      <div className="wrap-collapsible">
-        <label
-          style={{ background: runColor }}
-          htmlFor="collapsible"
-          className="lbl-toggle"
-          tabIndex={0}
-        >
+      <div className="">
+        <label style={{ background: runColor }} htmlFor="collapsible" tabIndex={0}>
           Lean is {isRunning}
         </label>
       </div>

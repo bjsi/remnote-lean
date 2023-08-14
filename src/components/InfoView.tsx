@@ -104,9 +104,9 @@ export class InfoView extends React.Component<InfoViewProps, InfoViewState> {
     const msgs = filteredMsgs.map((msg, i) => <div key={i}>{MessageWidget({ msg })}</div>);
     return (
       <div style={{ overflow: 'auto', height: '60%' }}>
-        <div className="infoview-buttons flex flex-row gap-2">
+        <div className="flex flex-row gap-2">
           <img
-            src={this.props.plugin.rootURL + '/display-goal-light.svg'}
+            src={this.props.plugin.rootURL + 'display-goal-light.svg'}
             title="Display Goal"
             style={{ opacity: this.state.displayMode === DisplayMode.OnlyState ? 1 : 0.25 }}
             onClick={() => {
@@ -115,7 +115,7 @@ export class InfoView extends React.Component<InfoViewProps, InfoViewState> {
           />
           <span>Goal</span>
           <img
-            src={this.props.plugin.rootURL + './display-list-light.svg'}
+            src={this.props.plugin.rootURL + 'display-list-light.svg'}
             title="Display Messages"
             style={{ opacity: this.state.displayMode === DisplayMode.AllMessage ? 1 : 0.25 }}
             onClick={() => {

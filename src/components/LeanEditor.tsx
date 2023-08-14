@@ -128,13 +128,13 @@ export class LeanEditor extends React.Component<LeanEditorProps, LeanEditorState
 
   render() {
     return (
-      <div className="leaneditorContainer min-height-[100%] max-h-[100%] h-[100%] py-2 box-border">
-        <div className="headerContainer">
+      <div className="min-height-[100%] max-h-[100%] h-[100%] py-2 box-border">
+        <div className="">
           <PageHeader file={this.props.file} status={this.state.status!} />
         </div>
-        <div className={clsx('flex editorContainer h-[100%]', 'flex-col')} ref="root">
+        <div className={clsx('flex h-[100%]', 'flex-col')} ref="root">
           <div ref="monaco" className={clsx('monacoContainer', 'h-[50%]')} />
-          <div className="infoContainer h-[100%]">
+          <div className="h-[100%]">
             <InfoView
               darkMode={this.props.isDarkMode}
               onSave={async () => {
