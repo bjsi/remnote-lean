@@ -1,6 +1,5 @@
 import { declareIndexPlugin, ReactRNPlugin, WidgetLocation } from '@remnote/plugin-sdk';
 import '../style.css';
-import '../App.css';
 import { leanCodeSlotId, leanProofPowerupCode } from '../lib/const';
 
 async function onActivate(plugin: ReactRNPlugin) {

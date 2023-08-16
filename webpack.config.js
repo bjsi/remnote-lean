@@ -108,7 +108,7 @@ const config = {
     }),
     new BannerPlugin({
       banner: (file) => {
-        if (file.filename?.toLowerCase().includes('worker')) {
+        if (['worker', '.css'].some(x =>  file.filename?.toLowerCase().includes(x))) {
           return '';
         } else if (file.chunk.name?.includes(SANDBOX_SUFFIX)) {
           return '';
