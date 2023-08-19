@@ -128,7 +128,7 @@ export class LeanEditor extends React.Component<LeanEditorProps, LeanEditorState
 
   render() {
     return (
-      <div className="min-height-[100%] max-h-[100%] h-[100%] py-2 box-border">
+      <div className="min-height-[100%] max-h-[100%] h-[100%] w-[100%] py-2 box-border">
         <div className="">
           <PageHeader file={this.props.file} status={this.state.status!} />
         </div>

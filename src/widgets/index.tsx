@@ -7,6 +7,7 @@ async function onActivate(plugin: ReactRNPlugin) {
   await registerApplyLeanProofCommand(plugin);
   await registerOpenPaneProofEditorWidget(plugin);
   await registerPaneProofEditorWidget(plugin);
+  await registerQueueWidget(plugin);
 }
 
 async function onDeactivate(_: ReactRNPlugin) {}
@@ -58,6 +59,12 @@ async function registerPaneProofEditorWidget(plugin: ReactRNPlugin) {
 async function openPaneProofEditorWidget(plugin: ReactRNPlugin, remId: string) {
   await plugin.window.openWidgetInPane('pane_proof_editor', {
     remId: remId,
+  });
+}
+
+async function registerQueueWidget(plugin: ReactRNPlugin) {
+  await plugin.app.registerWidget('queue', WidgetLocation.Flashcard, {
+    dimensions: { height: 'auto', width: '100%' },
   });
 }
 
