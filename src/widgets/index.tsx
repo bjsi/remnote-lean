@@ -64,6 +64,7 @@ async function openPaneProofEditorWidget(plugin: ReactRNPlugin, remId: string) {
 
 async function registerQueueWidget(plugin: ReactRNPlugin) {
   await plugin.app.registerWidget('queue', WidgetLocation.Flashcard, {
+    powerupFilter: leanProofPowerupCode,
     dimensions: { height: 'auto', width: '100%' },
   });
 }
